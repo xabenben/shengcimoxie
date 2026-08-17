@@ -18,23 +18,35 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Dependencies & Android SDK Tools
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ccache git libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk android-sdk
-          pip install --upgrade buildozer cython
-
-      - name: Pre-accept Android Licenses & Install AIDL
-        run: |
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          # 自动接受 Android SDK 协议并安装包含 aidl 的 build-tools 33.0.2
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME "build-tools;33.0.2" "platforms;android-31" || true
+          sudo apt-get install -y \
+            build-essential \
+            ccache \
+            git \
+            libffi-dev \
+            libssl-dev \
+            python3-dev \
+            libltdl-dev \
+            lld \
+            clang \
+            zip \
+            unzip \
+            openjdk-17-jdk \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            cmake
+          pip install --upgrade pip
+          pip install --upgrade buildozer cython "kivy[base]"
 
       - name: Build APK with Buildozer
         run: |
-          # 自动接受 Buildozer 生成的 SDK 协议
-          yes | buildozer -v android debug
+          # 设置自动同意协议的环境变量，避免触发 yes 命令管道破裂
+          export ACCEPT_BUILD_TOOLS_CHECKSUMS=true
+          buildozer -v android debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4.6.1
