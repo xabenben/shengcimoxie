@@ -42,10 +42,19 @@ jobs:
           pip install --upgrade pip
           pip install --upgrade buildozer cython "kivy[base]"
 
+      # 核心修复：预先下载并补齐包含 aidl 的 build-tools 34.0.0
+      - name: Setup Android SDK & Fix Aidl
+        run: |
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME "build-tools;34.0.0" "platforms;android-31" "platform-tools"
+          
+          # 创建 Buildozer 默认寻找 SDK 的目录，并将系统的 build-tools 建立软链接
+          mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools
+          ln -sf $ANDROID_HOME/build-tools/34.0.0 ~/.buildozer/android/platform/android-sdk/build-tools/34.0.0
+
       - name: Build APK with Buildozer
         run: |
-          # 设置自动同意协议的环境变量，避免触发 yes 命令管道破裂
-          export ACCEPT_BUILD_TOOLS_CHECKSUMS=true
           buildozer -v android debug
 
       - name: Upload APK Artifact
