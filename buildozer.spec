@@ -1,5 +1,5 @@
 [app]
-title = ºº×Ö´Ê»ãÀÊ¶ÁÆ÷
+title = WordReader
 package.name = wordreader
 package.domain = org.test
 source.dir = .
