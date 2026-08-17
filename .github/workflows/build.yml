@@ -13,12 +13,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
 
-      - name: Build APK using Buildozer Docker
-        uses: addnab/docker-run-action@v3
-        with:
-          image: kivy/buildozer:latest
-          options: -v ${{ github.workspace }}:/home/user/hostroot
-          run: |
+      - name: Build APK using Official Buildozer Docker Container
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/home/user/hostroot \
+            kivy/buildozer:latest \
             buildozer -v android debug
 
       - name: Upload APK Artifact
