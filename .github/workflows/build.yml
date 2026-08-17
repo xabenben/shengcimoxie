@@ -13,49 +13,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
 
-      - name: Set up Python
-        uses: actions/setup-python@v5.4.0
+      - name: Build APK using Buildozer Docker
+        uses: addnab/docker-run-action@v3
         with:
-          python-version: '3.10'
-
-      - name: Install System Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            ccache \
-            git \
-            libffi-dev \
-            libssl-dev \
-            python3-dev \
-            libltdl-dev \
-            lld \
-            clang \
-            zip \
-            unzip \
-            openjdk-17-jdk \
-            autoconf \
-            automake \
-            libtool \
-            pkg-config \
-            cmake
-          pip install --upgrade pip
-          pip install --upgrade buildozer cython "kivy[base]"
-
-      # 核心修复：预先下载并补齐包含 aidl 的 build-tools 34.0.0
-      - name: Setup Android SDK & Fix Aidl
-        run: |
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME "build-tools;34.0.0" "platforms;android-31" "platform-tools"
-          
-          # 创建 Buildozer 默认寻找 SDK 的目录，并将系统的 build-tools 建立软链接
-          mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools
-          ln -sf $ANDROID_HOME/build-tools/34.0.0 ~/.buildozer/android/platform/android-sdk/build-tools/34.0.0
-
-      - name: Build APK with Buildozer
-        run: |
-          buildozer -v android debug
+          image: kivy/buildozer:latest
+          options: -v ${{ github.workspace }}:/home/user/hostroot
+          run: |
+            buildozer -v android debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4.6.1
